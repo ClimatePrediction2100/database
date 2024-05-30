@@ -7,7 +7,7 @@ import config
 recorded = xr.open_dataset(config.RECORD_PATH)
 recorded_avg = pd.read_csv(config.RECORD_AVG_PATH)
 predicted = {ssp: xr.open_dataset(path) for ssp, path in config.PREDICT_PATH_MAP.items()}
-predicted_avg = {ssp: pd.read_csv(path) for ssp, path in config.CONTINENT_PATH_MAP.items()}
+predicted_avg = {ssp: pd.read_csv(path) for ssp, path in config.PREDICT_AVG_PATH_MAP.items()}
 
 
 def getCoordData(lat_idx, lon_idx, season, ssp):
