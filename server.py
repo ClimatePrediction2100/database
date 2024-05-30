@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import processor.load_data as dataloader
+import processor.convert_data as dataconverter
 
 app = Flask(__name__)
 
@@ -25,6 +26,16 @@ def get_continent_data():
     
     result = dataloader.get_continent_data(continent, season, ssp)
     return jsonify(result.tolist())
+
+is_data_converted = False
+
+@app.route('/convert', methods=['GET'])
+def convert_data():
+    if not is_data_converted:
+        dataconverter.save_average_data()
+        is_data_converted = True
+    return True
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
