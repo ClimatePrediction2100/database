@@ -14,7 +14,7 @@ def get_data():
     season = request.args.get('season', default=None)
     ssp = request.args.get('ssp')
 
-    data = dataloader.get_data(continent, latitude, longitude, ssp, season)
+    data = dataloader.get_data(continent, latitude, longitude, season, ssp)
 
     return jsonify(data.tolist())
 
