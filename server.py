@@ -27,7 +27,7 @@ is_data_converted = False
 @app.route('/data/convert', methods=['GET'])
 def convert_data():
     if not is_data_converted:
-        dataconverter.save_average_data()
+        dataconverter.save_continental_statistics_yearly()
         is_data_converted = True
     return True
 
