@@ -1,0 +1,3 @@
+import processor.convert_data as dataconverter
+
+dataconverter.save_continental_statistics_yearly()

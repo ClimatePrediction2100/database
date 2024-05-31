@@ -20,7 +20,7 @@ def get_data():
 
     data = dataloader.get_data(continent, latitude, longitude, season, ssp)
 
-    return jsonify(data.tolist())
+    return jsonify(data)
 
 is_data_converted = False
 
