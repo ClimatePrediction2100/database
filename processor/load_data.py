@@ -37,7 +37,7 @@ def get_continent_data(continent, season, ssp):
     if season:
         result = combined_temperature_list[config.SEASONS[season]::12]
     else:
-        result = result = compute_annual_average(combined_temperature_list)
+        result = compute_annual_average(combined_temperature_list)
     
     return result
 
