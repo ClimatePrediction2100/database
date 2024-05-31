@@ -18,7 +18,7 @@ cached_stat = {
 }
 
 
-def _get_coord_data(lat_idx, lon_idx, season, ssp, recorded, predicted, config):
+def _get_coord_data(lat_idx, lon_idx, season, ssp):
     from_recorded = recorded["temperature"][0:1980].isel(latitude=lat_idx, longitude=lon_idx).values
     from_predicted = predicted[ssp]["temperature"].isel(latitude=lat_idx, longitude=lon_idx).values
     
@@ -27,9 +27,11 @@ def _get_coord_data(lat_idx, lon_idx, season, ssp, recorded, predicted, config):
     if season:
         season_indices = config.SEASONS[season]
         seasonal_temperatures = [combined_temperature_list[i] for i in range(len(combined_temperature_list)) if i % 12 in season_indices]
-        data = np.mean(seasonal_temperatures)
+        data = [np.nanmean(seasonal_temperatures[i * 3:(i + 1) * 3]) for i in range((len(seasonal_temperatures) + 2) // 3 )] 
     else:
-        data = np.mean(combined_temperature_list)
+        data = [np.nanmean(combined_temperature_list[i * 12:(i + 1) * 12]) for i in range((len(combined_temperature_list) + 11) // 12 )] 
+
+    data = [None if np.isnan(x) else float(x) for x in data]
 
     result = {
         "avg": data,
