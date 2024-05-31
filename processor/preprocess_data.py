@@ -21,7 +21,7 @@ continents = world.dissolve(by="continent")
 continents["continent_id"] = range(len(continents))
 
 
-def calculate_continental_statistics_monthly(ds, continent):
+def _calculate_continental_statistics_monthly(ds, continent):
     if continent == "World":
         masked_data = ds["temperature"]
     else:
@@ -58,15 +58,15 @@ def calculate_continental_statistics_monthly(ds, continent):
     return continental_df
 
 
-def save_continental_statistics_monthly():
+def _save_continental_statistics_monthly():
     # save recorded average data
     recorded_df = pd.DataFrame()
 
     for continent in config.CONTINENTS:
-        result = calculate_continental_statistics_monthly(recorded, continent)
-        recorded_df[f"{continent}_avg"] = result["temperature_avg"]
-        recorded_df[f"{continent}_max"] = result["temperature_max"]
-        recorded_df[f"{continent}_min"] = result["temperature_min"]
+        result = _calculate_continental_statistics_monthly(recorded, continent)
+        recorded_df[f"{continent}_Avg"] = result["temperature_avg"]
+        recorded_df[f"{continent}_Max"] = result["temperature_max"]
+        recorded_df[f"{continent}_Min"] = result["temperature_min"]
 
     recorded_df.to_csv(config.RECORD_STAT_PATH, index=False)
 
@@ -75,26 +75,18 @@ def save_continental_statistics_monthly():
         predicted_df = pd.DataFrame()
 
         for continent in config.CONTINENTS:
-            result = calculate_continental_statistics_monthly(ds, continent)
-            predicted_df[f"{continent}_avg"] = result["temperature_avg"]
-            predicted_df[f"{continent}_max"] = result["temperature_max"]
-            predicted_df[f"{continent}_min"] = result["temperature_min"]
+            result = _calculate_continental_statistics_monthly(ds, continent)
+            predicted_df[f"{continent}_Avg"] = result["temperature_avg"]
+            predicted_df[f"{continent}_Max"] = result["temperature_max"]
+            predicted_df[f"{continent}_Min"] = result["temperature_min"]
 
         predicted_df.to_csv(config.PREDICT_STAT_PATH_MAP[ssp], index=False)
 
 
-def save_continental_statistics_yearly():
-    save_continental_statistics_monthly()
+def _save_continental_statistics_yearly():
     recorded_stat = pd.read_csv(config.RECORD_STAT_PATH)
     predicted_stat = {
         ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items()
-    }
-    
-    seasons = {
-        'winter': [0, 1, 11],  # January, February, December
-        'spring': [2, 3, 4],   # March, April, May
-        'summer': [5, 6, 7],   # June, July, August
-        'fall': [8, 9, 10],    # September, October, November
     }
     
     for ssp in config.SSP_SCENARIOS:
@@ -110,22 +102,26 @@ def save_continental_statistics_yearly():
             year_dict = {}
             
             for column in combined_stat.columns:
-                if '_avg' in column:
+                if '_Avg' in column:
                     # Calculate yearly and seasonal averages
-                    year_dict[column + '_yearly'] = year_data[column].mean()
-                    for season, months in seasons.items():
+                    year_dict[column + '_Yearly'] = year_data[column].mean()
+                    for season, months in config.SEASONS.items():
                         year_dict[column + '_' + season] = year_data.iloc[months][column].mean()
-                elif '_max' in column:
+                elif '_Max' in column:
                     # Calculate yearly and seasonal maximums
-                    year_dict[column + '_yearly'] = year_data[column].max()
-                    for season, months in seasons.items():
+                    year_dict[column + '_Yearly'] = year_data[column].max()
+                    for season, months in config.SEASONS.items():
                         year_dict[column + '_' + season] = year_data.iloc[months][column].max()
-                elif '_min' in column:
+                elif '_Min' in column:
                     # Calculate yearly and seasonal minimums
-                    year_dict[column + '_yearly'] = year_data[column].min()
-                    for season, months in seasons.items():
+                    year_dict[column + '_Yearly'] = year_data[column].min()
+                    for season, months in config.SEASONS.items():
                         year_dict[column + '_' + season] = year_data.iloc[months][column].min()
         
             processed_data = pd.concat([processed_data, pd.DataFrame([year_dict])], ignore_index=True)
         
         processed_data.to_csv(config.ANNUAL_STAT_PATH_MAP[ssp], index=False)
+
+def preprocess_data():
+    _save_continental_statistics_monthly()
+    _save_continental_statistics_yearly()

@@ -43,8 +43,8 @@ CONTINENTS = (
 )
 
 SEASONS = {
-    "Winter": 0,
-    "Spring": 3,
-    "Summer": 6,
-    "Fall": 9,
+    'Winter': [0, 1, 11],  # January, February, December
+    'Spring': [2, 3, 4],   # March, April, May
+    'Summer': [5, 6, 7],   # June, July, August
+    'Fall': [8, 9, 10],    # September, October, November
 }
