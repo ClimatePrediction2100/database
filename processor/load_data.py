@@ -27,9 +27,13 @@ def _get_coord_data(lat_idx, lon_idx, season, ssp, recorded, predicted, config):
     if season:
         season_indices = config.SEASONS[season]
         seasonal_temperatures = [combined_temperature_list[i] for i in range(len(combined_temperature_list)) if i % 12 in season_indices]
-        result = np.mean(seasonal_temperatures)
+        data = np.mean(seasonal_temperatures)
     else:
-        result = np.mean(combined_temperature_list)
+        data = np.mean(combined_temperature_list)
+
+    result = {
+        "avg": data,
+    }
 
     return result
 
@@ -52,10 +56,10 @@ def _get_continent_data(continent, season, ssp):
 
 def get_data(continent, latitude, longitude, season, ssp):
     if continent:
-        result = get_continent_data(continent, season, ssp)
+        result = _get_continent_data(continent, season, ssp)
     else:
         lat_idx = (latitude + 90) % 180
         lon_idx = (longitude + 180) % 360
-        result = get_coord_data(lat_idx, lon_idx, season, ssp)
+        result = _get_coord_data(lat_idx, lon_idx, season, ssp)
 
     return result
