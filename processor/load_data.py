@@ -17,7 +17,7 @@ def compute_annual_average(monthly_data):
     annual_average = np.mean(reshaped_data, axis=1)
     return annual_average
 
-def get_coord_data(lat_idx, lon_idx, season, ssp):
+def get_coord_data(lat_idx, lon_idx, ssp, season):
     from_recorded = recorded['temperature'][0:1980].isel(latitude=lat_idx, longitude=lon_idx).values
     from_predicted = predicted[ssp]['temperature'].isel(latitude=lat_idx, longitude=lon_idx).values
     combined_temperature_list = np.concatenate((from_recorded, from_predicted))
@@ -29,7 +29,7 @@ def get_coord_data(lat_idx, lon_idx, season, ssp):
     
     return result
 
-def get_continent_data(continent, season, ssp):
+def get_continent_data(continent, ssp, season):
     from_recorded = recorded_avg[continent].tolist()[0:1980]
     from_predicted = predicted_avg[ssp][continent].tolist()
     combined_temperature_list = np.concatenate((from_recorded, from_predicted))
@@ -39,4 +39,14 @@ def get_continent_data(continent, season, ssp):
     else:
         result = result = compute_annual_average(combined_temperature_list)
     
+    return result
+
+def get_data(continent, latitude, longitude, ssp, season):
+    if continent:
+        result = get_continent_data(continent, ssp, season)
+    else:
+        lat_idx = (latitude + 90) % 180
+        lon_idx = (longitude + 180) % 360
+        result = get_coord_data(lat_idx, lon_idx, ssp, season)
+
     return result
