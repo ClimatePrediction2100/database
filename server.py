@@ -8,8 +8,12 @@ app = Flask(__name__)
 def get_data():
     continent = request.args.get('continent', None)
 
-    latitude = int(request.args.get('latitude', 0))
-    longitude = int(request.args.get('longitude', 0))
+    latitude = request.args.get('latitude', None)
+    longitude = request.args.get('longitude', None)
+
+    if not continent:
+        latitude = int(latitude)
+        longitude = int(longitude)
 
     season = request.args.get('season', default=None)
     ssp = request.args.get('ssp')
@@ -29,4 +33,4 @@ def convert_data():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=8001)
