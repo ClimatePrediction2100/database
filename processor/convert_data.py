@@ -7,11 +7,9 @@ import numpy as np
 import config
 
 recorded = xr.open_dataset(config.RECORD_PATH)
-# recorded_avg = pd.read_csv(config.RECORD_STAT_PATH)
 predicted = {
     ssp: xr.open_dataset(path) for ssp, path in config.PREDICT_PATH_MAP.items()
 }
-# predicted_avg = {ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items()}
 
 # Load world shapefile using deprecated method (for now)
 world = gpd.read_file(gpd.datasets.get_path("naturalearth_lowres"))
@@ -23,25 +21,19 @@ continents = world.dissolve(by="continent")
 continents["continent_id"] = range(len(continents))
 
 
-def convert_data(ds, continent):
+def calculate_continental_statistics_monthly(ds, continent):
     if continent == "World":
         masked_data = ds["temperature"]
     else:
         # Create masks for continents over your dataset grid (using original coordinates)
         if continent == "Antartica":
             # Create an empty mask with the same shape as your dataset
-            continent_mask = xr.DataArray(
-                np.nan,
-                coords=[ds.latitude, ds.longitude],
-                dims=["latitude", "longitude"],
-            )
+            continent_mask = xr.DataArray(np.nan, coords=[ds.latitude, ds.longitude], dims=["latitude", "longitude"])
 
             # Set the mask values to 1 (or any non-NaN value) for Antarctica's latitude indices from 0 to 25
             continent_mask.loc[dict(latitude=ds.latitude[0:26])] = 1
         else:
-            mask = regionmask.mask_geopandas(
-                continents, ds.longitude, ds.latitude, numbers="continent_id"
-            )
+            mask = regionmask.mask_geopandas(continents, ds.longitude, ds.latitude, numbers="continent_id")
 
             # Extract the mask for the given continent (assuming the continent name is valid and in 'continents')
             continent_id = continents.index.get_loc(continent)
@@ -66,12 +58,12 @@ def convert_data(ds, continent):
     return continental_df
 
 
-def save_average_data():
+def save_continental_statistics_monthly():
     # save recorded average data
     recorded_df = pd.DataFrame()
 
     for continent in config.CONTINENTS:
-        result = convert_data(recorded, continent)
+        result = calculate_continental_statistics_monthly(recorded, continent)
         recorded_df[f"{continent}_avg"] = result["temperature_avg"]
         recorded_df[f"{continent}_max"] = result["temperature_max"]
         recorded_df[f"{continent}_min"] = result["temperature_min"]
@@ -83,9 +75,57 @@ def save_average_data():
         predicted_df = pd.DataFrame()
 
         for continent in config.CONTINENTS:
-            result = convert_data(ds, continent)
+            result = calculate_continental_statistics_monthly(ds, continent)
             predicted_df[f"{continent}_avg"] = result["temperature_avg"]
             predicted_df[f"{continent}_max"] = result["temperature_max"]
             predicted_df[f"{continent}_min"] = result["temperature_min"]
 
         predicted_df.to_csv(config.PREDICT_STAT_PATH_MAP[ssp], index=False)
+
+
+def save_continental_statistics_yearly():
+    save_continental_statistics_monthly()
+    recorded_stat = pd.read_csv(config.RECORD_STAT_PATH)
+    predicted_stat = {
+        ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items()
+    }
+    
+    seasons = {
+        'winter': [0, 1, 11],  # January, February, December
+        'spring': [2, 3, 4],   # March, April, May
+        'summer': [5, 6, 7],   # June, July, August
+        'fall': [8, 9, 10],    # September, October, November
+    }
+    
+    for ssp in config.SSP_SCENARIOS:
+        combined_stat = pd.concat([recorded_stat, predicted_stat[ssp]])
+        processed_data = pd.DataFrame()
+        
+        for start in range(0, len(combined_stat), 12):
+            end = start + 12
+            if end > len(combined_stat):
+                break
+            
+            year_data = combined_stat.iloc[start:end]
+            year_dict = {}
+            
+            for column in combined_stat.columns:
+                if '_avg' in column:
+                    # Calculate yearly and seasonal averages
+                    year_dict[column + '_yearly'] = year_data[column].mean()
+                    for season, months in seasons.items():
+                        year_dict[column + '_' + season] = year_data.iloc[months][column].mean()
+                elif '_max' in column:
+                    # Calculate yearly and seasonal maximums
+                    year_dict[column + '_yearly'] = year_data[column].max()
+                    for season, months in seasons.items():
+                        year_dict[column + '_' + season] = year_data.iloc[months][column].max()
+                elif '_min' in column:
+                    # Calculate yearly and seasonal minimums
+                    year_dict[column + '_yearly'] = year_data[column].min()
+                    for season, months in seasons.items():
+                        year_dict[column + '_' + season] = year_data.iloc[months][column].min()
+        
+            processed_data = pd.concat([processed_data, pd.DataFrame([year_dict])], ignore_index=True)
+        
+        processed_data.to_csv(config.ANNUAL_STAT_PATH_MAP[ssp], index=False)

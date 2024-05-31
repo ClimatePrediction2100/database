@@ -24,6 +24,13 @@ PREDICT_STAT_PATH_MAP = {
     for ssp in SSP_SCENARIOS
 }
 
+ANNUAL_STAT_PATH_MAP = {
+    ssp: os.path.join(
+        DATA_PATH, "cached", "csv", f"SSP{ssp}_predictions_annual_statistics.csv"
+    )
+    for ssp in SSP_SCENARIOS
+}
+
 CONTINENTS = (
     "World",
     "Asia",
@@ -40,5 +47,4 @@ SEASONS = {
     "Spring": 3,
     "Summer": 6,
     "Fall": 9,
-    "Autumn": 9,
 }
