@@ -42,15 +42,19 @@ def convert_data(ds, continent):
         masked_data = ds['temperature'].where(continent_mask.notnull())
 
     # Calculate the mean temperature over the masked region, along the spatial dimensions (latitude and longitude)
-    mean_temperature = masked_data.mean(dim=['latitude', 'longitude'], skipna=True)
-
-    # Convert the mean temperature data to a DataFrame
-    mean_temperature_df = mean_temperature.to_dataframe().reset_index()
-
-    return mean_temperature_df
-
-
-# convert_data()
+    temperature_mean = masked_data.mean(dim=['latitude', 'longitude'], skipna=True)
+    temperature_max = masked_data.max(dim=['latitude', 'longitude'], skipna=True)
+    temperature_min = masked_data.min(dim=['latitude', 'longitude'], skipna=True)
+    
+    continental_df = pd.DataFrame(
+        {
+            'temperature_avg': temperature_mean,
+            'temperature_max': temperature_max,
+            'temperature_min': temperature_min
+        }
+    )
+    
+    return continental_df
 
 def save_average_data():
     # save recorded average data
@@ -58,7 +62,9 @@ def save_average_data():
     
     for continent in config.CONTINENTS:
         result = convert_data(recorded, continent)
-        recorded_df[continent] = result['temperature']
+        recorded_df[f"{continent}_avg"] = result['temperature_avg']
+        recorded_df[f"{continent}_max"] = result['temperature_max']
+        recorded_df[f"{continent}_min"] = result['temperature_min']
         
     recorded_df.to_csv(config.RECORD_AVG_PATH, index=False)
     
@@ -68,6 +74,8 @@ def save_average_data():
         
         for continent in config.CONTINENTS:
             result = convert_data(ds, continent)
-            predicted_df[continent] = result['temperature']
+            predicted_df[f"{continent}_avg"] = result['temperature_avg']
+            predicted_df[f"{continent}_max"] = result['temperature_max']
+            predicted_df[f"{continent}_min"] = result['temperature_min']
             
         predicted_df.to_csv(config.PREDICT_AVG_PATH_MAP[ssp], index=False)
