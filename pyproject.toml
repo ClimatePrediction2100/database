@@ -12,6 +12,7 @@ geopandas = "^0.14.4"
 regionmask = "^0.12.1"
 netcdf4 = "^1.6.5"
 flask = "^3.0.3"
+cftime = "^1.6.3"
 
 
 [build-system]
