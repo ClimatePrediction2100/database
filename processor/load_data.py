@@ -3,19 +3,37 @@ import pandas as pd
 import numpy as np
 
 import config
+import processor.preprocess_data as dataconverter
 
-recorded = xr.open_dataset(config.RECORD_PATH)
-recorded_stat = pd.read_csv(config.RECORD_STAT_PATH)
-predicted = {
-    ssp: xr.open_dataset(path) for ssp, path in config.PREDICT_PATH_MAP.items()
-}
-predicted_stat = {
-    ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items()
-}
+def _load_raw_data():
+    recorded = xr.open_dataset(config.RECORD_PATH)
 
-cached_stat = {
-    ssp: pd.read_csv(path) for ssp, path in config.ANNUAL_STAT_PATH_MAP.items()
-}
+    predicted = {
+        ssp: xr.open_dataset(path) for ssp, path in config.PREDICT_PATH_MAP.items()
+    }
+
+    return recorded, predicted
+
+def _load_stat_data():
+    try:
+        recorded_stat = pd.read_csv(config.RECORD_STAT_PATH)
+
+        predicted_stat = {
+            ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items()
+        }
+
+        cached_stat = {
+            ssp: pd.read_csv(path) for ssp, path in config.ANNUAL_STAT_PATH_MAP.items()
+        }
+    except FileNotFoundError:
+        dataconverter.preprocess_data()
+        return _load_stat_data()
+
+    return recorded_stat, predicted_stat, cached_stat
+
+
+recorded, predicted = _load_raw_data()
+recorded_stat, predicted_stat, cached_stat = _load_stat_data()
 
 
 def _get_coord_data(lat_idx, lon_idx, season, ssp):
