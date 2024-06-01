@@ -6,9 +6,9 @@ import numpy as np
 
 import config
 
-recorded = xr.open_dataset(config.RECORD_PATH)
+recorded = xr.open_dataset(config.RECORD_PATH, decode_times=False)
 predicted = {
-    ssp: xr.open_dataset(path) for ssp, path in config.PREDICT_PATH_MAP.items()
+    ssp: xr.open_dataset(path, decode_times=False) for ssp, path in config.PREDICT_PATH_MAP.items()
 }
 
 # Load world shapefile using deprecated method (for now)

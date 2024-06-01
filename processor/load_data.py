@@ -6,10 +6,10 @@ import config
 import processor.preprocess_data as dataconverter
 
 def _load_raw_data():
-    recorded = xr.open_dataset(config.RECORD_PATH)
+    recorded = xr.open_dataset(config.RECORD_PATH, decode_times=False)
 
     predicted = {
-        ssp: xr.open_dataset(path) for ssp, path in config.PREDICT_PATH_MAP.items()
+        ssp: xr.open_dataset(path, decode_times=False) for ssp, path in config.PREDICT_PATH_MAP.items()
     }
 
     return recorded, predicted
