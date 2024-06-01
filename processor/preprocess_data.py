@@ -125,3 +125,6 @@ def _save_continental_statistics_yearly():
 def preprocess_data():
     _save_continental_statistics_monthly()
     _save_continental_statistics_yearly()
+    
+if __name__ == '__main__':
+    preprocess_data()

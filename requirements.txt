@@ -1,0 +1,8 @@
+flask
+xarray
+geopandas
+regionmask
+netcdf4
+cftime
+pandas
+numpy
