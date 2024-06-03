@@ -85,9 +85,13 @@ def _save_continental_statistics_monthly():
 
 def _save_continental_statistics_yearly():
     recorded_stat = pd.read_csv(config.RECORD_STAT_PATH)
+    recorded_stat = recorded_stat.apply(lambda x: np.where((x < -100) | (x > 100), np.nan, x))
     predicted_stat = {
         ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items()
     }
+    for ssp, df in predicted_stat.items():
+        df = df.apply(lambda x: np.where((x < -100) | (x > 100), np.nan, x))
+        
     
     for ssp in config.SSP_SCENARIOS:
         combined_stat = pd.concat([recorded_stat, predicted_stat[ssp]])
