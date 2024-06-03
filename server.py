@@ -69,4 +69,4 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, shutdown_pool)
     signal.signal(signal.SIGTERM, shutdown_pool)
 
-    app.run(debug=False, port=8001)
+    app.run(debug=False, host="0.0.0.0", port=8001)
