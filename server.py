@@ -39,7 +39,7 @@ def get_data():
     continent = request.args.get('continent', None)
     latitude = request.args.get('latitude', None)
     longitude = request.args.get('longitude', None)
-    season = request.args.get('season', default=None)
+    season = request.args.get('season')
     ssp = request.args.get('ssp')
 
     if latitude and longitude:
