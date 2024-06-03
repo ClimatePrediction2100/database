@@ -20,14 +20,14 @@ def load_all_data():
             ssp: xr.open_dataset(path, decode_times=False, cache=False) for ssp, path in config.PREDICT_PATH_MAP.items()
         },
 
-        recorded_stat=pd.read_csv(config.RECORD_STAT_PATH, keep_default_na=False),
+        recorded_stat=pd.read_csv(config.RECORD_STAT_PATH).replace({np.nan: None}),
 
         predicted_stat={ 
-            ssp: pd.read_csv(path, keep_default_na=False) for ssp, path in config.PREDICT_STAT_PATH_MAP.items() 
+            ssp: pd.read_csv(path).replace({np.nan: None}) for ssp, path in config.PREDICT_STAT_PATH_MAP.items() 
         },
 
         cached_stat={
-            ssp: pd.read_csv(path, keep_default_na=False) for ssp, path in config.ANNUAL_STAT_PATH_MAP.items()
+            ssp: pd.read_csv(path).replace({np.nan: None}) for ssp, path in config.ANNUAL_STAT_PATH_MAP.items()
         }
     )
 
@@ -44,7 +44,7 @@ def _get_coord_data(temp_data, lat_idx, lon_idx, season, ssp):
         seasonal_temperatures = combined_temperature_list[np.isin(np.arange(len(combined_temperature_list)) % 12, season_indices)]
         data = np.nanmean(seasonal_temperatures.reshape(-1, 3), axis=1)
     
-    data = [None if np.isnan(x) else float(x) for x in data]
+    data = np.where(np.isnan(data), None, data).tolist()
 
     result = {
         "avg": data,
