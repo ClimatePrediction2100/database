@@ -26,7 +26,7 @@ def _calculate_continental_statistics_monthly(ds, continent):
         masked_data = ds["temperature"]
     else:
         # Create masks for continents over your dataset grid (using original coordinates)
-        if continent == "Antartica":
+        if continent == "Antarctica":
             # Create an empty mask with the same shape as your dataset
             continent_mask = xr.DataArray(np.nan, coords=[ds.latitude, ds.longitude], dims=["latitude", "longitude"])
 
