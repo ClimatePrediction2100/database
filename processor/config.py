@@ -39,7 +39,7 @@ CONTINENTS = (
     "North America",
     "South America",
     "Oceania",
-    "Antartica",
+    "Antarctica",
 )
 
 SEASONS = {
