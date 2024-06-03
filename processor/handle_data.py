@@ -17,17 +17,17 @@ def load_all_data():
         recorded=xr.open_dataset(config.RECORD_PATH, decode_times=False, cache=False),
 
         predicted={ 
-            ssp: xr.open_dataset(path, decode_times=False, cache=False) for ssp, path in config.PREDICT_PATH_MAP.items() 
+            ssp: xr.open_dataset(path, decode_times=False, cache=False) for ssp, path in config.PREDICT_PATH_MAP.items()
         },
 
-        recorded_stat=pd.read_csv(config.RECORD_STAT_PATH),
+        recorded_stat=pd.read_csv(config.RECORD_STAT_PATH, keep_default_na=False),
 
         predicted_stat={ 
-            ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items() 
+            ssp: pd.read_csv(path, keep_default_na=False) for ssp, path in config.PREDICT_STAT_PATH_MAP.items() 
         },
 
         cached_stat={
-            ssp: pd.read_csv(path) for ssp, path in config.ANNUAL_STAT_PATH_MAP.items()
+            ssp: pd.read_csv(path, keep_default_na=False) for ssp, path in config.ANNUAL_STAT_PATH_MAP.items()
         }
     )
 
@@ -38,12 +38,12 @@ def _get_coord_data(temp_data, lat_idx, lon_idx, season, ssp):
     combined_temperature_list = np.concatenate((from_recorded, from_predicted))
     
     if season == "Yearly":
-        data = [np.nanmean(combined_temperature_list[i * 12:(i + 1) * 12]) for i in range((len(combined_temperature_list) + 11) // 12 )]
+        data = np.nanmean(combined_temperature_list.reshape(-1, 12), axis=1)
     else:
         season_indices = config.SEASONS[season]
-        seasonal_temperatures = [combined_temperature_list[i] for i in range(len(combined_temperature_list)) if i % 12 in season_indices]
-        data = [np.nanmean(seasonal_temperatures[i * 3:(i + 1) * 3]) for i in range((len(seasonal_temperatures) + 2) // 3 )]
-
+        seasonal_temperatures = combined_temperature_list[np.isin(np.arange(len(combined_temperature_list)) % 12, season_indices)]
+        data = np.nanmean(seasonal_temperatures.reshape(-1, 3), axis=1)
+    
     data = [None if np.isnan(x) else float(x) for x in data]
 
     result = {
