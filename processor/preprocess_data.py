@@ -85,6 +85,8 @@ def _save_continental_statistics_monthly():
 
 def _save_continental_statistics_yearly():
     recorded_stat = pd.read_csv(config.RECORD_STAT_PATH)
+    # Before merging, truncate recoreded data to 2014, which is 1980 months since Jan 1850
+    recorded_stat = recorded_stat.iloc[:1980]
     predicted_stat = {
         ssp: pd.read_csv(path) for ssp, path in config.PREDICT_STAT_PATH_MAP.items()
     }
